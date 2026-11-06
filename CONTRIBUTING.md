@@ -62,6 +62,25 @@ Git has a `-s` command line option to append this automatically to your commit m
 $ git commit -s -m 'This is my commit message'
 ```
 
+## Commit Message Format
+
+Commit subjects must follow the [Conventional Commits](https://www.conventionalcommits.org/) format. The `commit-lint` CI check enforces this on every pull request.
+
+Merges use the rebase strategy, so **every commit subject of your PR lands on the history** — all commits in a PR must conform, not just the last one.
+
+```text
+<type>(<scope>): <short lowercase summary, no trailing period>
+```
+
+* Allowed types: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`, `chore`, `revert`
+* The scope is optional and free-form; for chart changes use the chart's name, e.g. `fix(keycloakx): ...`
+* Keep the subject under 100 characters
+* Examples:
+  * `fix(keycloakx): readinessProbe gated on health.enabled, not metrics.enabled`
+  * `docs: make version bumping and releasing a maintainer task`
+
+The checks use the standard `@commitlint/config-conventional` rules; commit bodies and trailers (like the `Signed-off-by:` line) are unaffected apart from a 100-character line-length limit.
+
 ## How to Contribute
 
 1. Fork this repository, develop, and test your changes.
@@ -84,6 +103,14 @@ $ git commit -s -m 'This is my commit message'
 
 * Must pass DCO check
 * Must pass CI jobs for linting and installing changed charts
-* Any change to a chart requires a version bump following [semver](https://semver.org/) principles
 
-Once changes have been merged, the release job will automatically run to package and release changed charts.
+Version bumping and releasing is a maintainer task:
+
+* Do not change the chart `version` in a chart's `Chart.yaml` as part of your PR.
+* Once your changes are merged, a maintainer decides when to cut the next release and which [semver](https://semver.org/) version it gets.
+* To publish a release, a maintainer bumps the chart version and runs the "Release charts" workflow, which packages and releases the changed charts.
+
+Updating `appVersion` in your PR is fine: if you want the chart to ship a newer Keycloak image, that change is welcome. Please update all places that reference the bundled application version:
+
+* `appVersion` in the chart's `Chart.yaml` — the Keycloak image tag defaults to it, so leave `image.tag` in `values.yaml` empty unless you want to pin a different tag
+* example files referencing the Keycloak version (e.g. `examples/postgresql-kubeping/Dockerfile`)

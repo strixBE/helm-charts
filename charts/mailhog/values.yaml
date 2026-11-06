@@ -5,8 +5,18 @@ image:
 
 imagePullSecrets: []
 
+extraContainers: []
+
 nameOverride: ""
 fullnameOverride: ""
+
+containerPort:
+  http:
+    name: http
+    port: 8025
+  smtp:
+    name: tcp-smtp
+    port: 1025
 
 serviceAccount:
   # Specifies whether a ServiceAccount should be created
@@ -21,11 +31,15 @@ automountServiceAccountToken: false
 
 service:
   annotations: {}
+  extraPorts: []
   clusterIP: ""
   externalIPs: []
   loadBalancerIP: ""
   loadBalancerSourceRanges: []
   type: ClusterIP
+  # Named target ports are not supported by GCE health checks, so when deploying on GKE
+  # and exposing it via GCE ingress, the health checks fail and the load balancer returns a 502.
+  namedTargetPort: true
   port:
     http: 8025
     smtp: 1025
@@ -94,11 +108,20 @@ outgoingSMTP:
     #   host: "mail2.example.com"
     #   port: "587"   # NOTE: go requires this port number to be a string... otherwise the container won't start
 
+podReplicas: 1
+
 podAnnotations: {}
 
 podLabels: {}
 
 extraEnv: []
+
+# ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#configure-probes
+livenessProbe:
+  initialDelaySeconds: 10
+  timeoutSeconds: 1
+
+readinessProbe: {}
 
 resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious
@@ -117,3 +140,5 @@ affinity: {}
 nodeSelector: {}
 
 tolerations: []
+
+priorityClassName:

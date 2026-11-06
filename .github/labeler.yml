@@ -1,0 +1,12 @@
+Repo:
+  - '*'
+  - '.github/**'
+
+Keycloak:
+  - charts/keycloak/**
+
+KeycloakX:
+  - charts/keycloakx/**
+
+Mailhog:
+  - charts/mailhog/**

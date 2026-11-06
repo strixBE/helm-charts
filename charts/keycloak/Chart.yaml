@@ -1,7 +1,7 @@
-apiVersion: v1
+apiVersion: v2
 name: keycloak
-version: 15.1.0
-appVersion: 15.0.2
+version: 18.10.0
+appVersion: 17.0.1-legacy
 description: Open Source Identity and Access Management For Modern Applications and Services
 keywords:
   - sso
@@ -11,7 +11,7 @@ keywords:
   - kerberos
   - ldap
 home: https://www.keycloak.org/
-icon: https://www.keycloak.org/resources/images/keycloak_logo_480x108.png
+icon: https://www.keycloak.org/resources/images/keycloak_icon_512px.svg
 sources:
   - https://github.com/codecentric/helm-charts
   - https://github.com/jboss-dockerfiles/keycloak
@@ -21,3 +21,8 @@ maintainers:
     email: unguiculus@gmail.com
   - name: thomasdarimont
     email: thomas.darimont+github@gmail.com
+dependencies:
+  - name: postgresql
+    version: 10.16.2
+    repository: https://raw.githubusercontent.com/bitnami/charts/archive-full-index/bitnami
+    condition: postgresql.enabled

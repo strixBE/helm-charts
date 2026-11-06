@@ -9,8 +9,8 @@ replicas: 1
 
 image:
   # The Keycloak image repository
-  repository: docker.io/jboss/keycloak
-  # Overrides the Keycloak image tag whose default is the chart version
+  repository: quay.io/keycloak/keycloak
+  # Overrides the Keycloak image tag whose default is the chart appVersion
   tag: ""
   # The Keycloak image pull policy
   pullPolicy: IfNotPresent
@@ -30,6 +30,9 @@ enableServiceLinks: true
 
 # Pod management policy. One of `Parallel` or `OrderedReady`
 podManagementPolicy: Parallel
+
+# StatefulSet's update strategy
+updateStrategy: RollingUpdate
 
 # Pod restart policy. One of `Always`, `OnFailure`, or `Never`
 restartPolicy: Always
@@ -70,6 +73,12 @@ securityContext:
 
 # Additional init containers, e. g. for providing custom themes
 extraInitContainers: ""
+
+# When using service meshes which rely on a sidecar, it may be necessary to skip init containers altogether,
+# since the sidecar doesn't start until the init containers are done, and the sidecar may be required
+# for network access.
+# For example, Istio in strict mTLS mode prevents the pgchecker init container from ever completing
+skipInitContainers: false
 
 # Additional sidecar containers, e. g. for a database proxy, such as Google's cloudsql-proxy
 extraContainers: ""
@@ -289,11 +298,11 @@ ingress:
       paths:
         - path: /
           pathType: Prefix
-  # TLS configuration
-  tls:
-    - hosts:
-        - keycloak.example.com
-      secretName: ""
+# Example TLS configuration
+#   tls:
+#     - hosts:
+#         - keycloak.example.com
+#       secretName: ""
 
   # ingress for console only (/auth/admin)
   console:
@@ -312,6 +321,11 @@ ingress:
         paths:
           - path: /auth/admin/
             pathType: Prefix
+    # Console TLS configuration
+    tls: []
+#      - hosts:
+#          - console.keycloak.example.com
+#        secretName: ""
 
 ## Network policy configuration
 networkPolicy:
@@ -452,7 +466,7 @@ prometheusRule:
   #     severity: warning
 
 autoscaling:
-  # If `true`, a autoscaling/v2beta2 HorizontalPodAutoscaler resource is created (requires Kubernetes 1.18 or above)
+  # If `true`, a autoscaling/v2beta2 or autoscaling/v2 HorizontalPodAutoscaler resource is created (requires Kubernetes 1.18 or 1.23 or above)
   # Autoscaling seems to be most reliable when using KUBE_PING service discovery (see README for details)
   # This disables the `replicas` field in the StatefulSet
   enabled: false
@@ -496,3 +510,5 @@ test:
   securityContext:
     runAsUser: 1000
     runAsNonRoot: true
+  # See https://helm.sh/docs/topics/charts_hooks/#hook-deletion-policies
+  deletionPolicy: before-hook-creation
